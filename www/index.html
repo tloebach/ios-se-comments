@@ -102,6 +102,7 @@
         <div data-role="page" data-theme="d" id="jqm-home">
             <script>     $j(document).delegate('#jqm-home', 'pageinit', function() {
                                                $j('#searchbox').hide();
+                                               $j('#radiodeal').hide();
                                                showOpptyHistory();
                                                });
                 </script>
@@ -121,6 +122,14 @@
                         <li><a id="chatter-nav" href="#" class="ui-btn-active">History</a></li>
                     </ul>
                 </div>
+                <div id="radiodeal" data-role="fieldcontain">
+                    <fieldset data-role="controlgroup" data-type="horizontal">
+                        <input type="radio" name="deals" id="alldeals" class="deals" checked="checked"/>
+                        <label for="alldeals">All Deals</label>
+                        <input type="radio" name="deals" id="bigdeals" class="deals" />
+                        <label for="bigdeals">Only show deals > $100k</label>
+                        </fieldset>
+                        </div>
             </div>
             
             <div id="#content" data-role="content">
@@ -144,6 +153,7 @@
             </div>
         </div>
         
+        
         <div data-role="page" data-theme="d" data-add-back-btn="true" id="options">
             <div  data-theme="d" data-role="header">
                 <h1>Salesforce SE Comments App Options</h1>
@@ -151,7 +161,6 @@
             
             
             <div data-theme="d" id="#content" data-role="content">
-                
                 <div>
                     <p><a href="#" id="link_clearhistory" data-role="button" data-inline="true">Clear Search History</a></p>
                 </div>

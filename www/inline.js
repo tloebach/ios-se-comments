@@ -35,14 +35,19 @@ function regLinkClickHandlers() {
                      $j('#searchbox').hide();
                     navContext = e.target.innerText;
                     if (navContext == "Recent") {
+                       $j('#radiodeal').hide();
                        forcetkClient.recent(onSuccessRecentOppty, onErrorSfdc);
                     } else if (navContext == "Search") {
                        // $j.mobile.changePage('#searchpage');
                        $j('#searchbox').show();
+                       $j('#radiodeal').show();
+
                     } else if (navContext == "Deal Contribution") {
-                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
+                    $j('#radiodeal').show();
+                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
                       forcetkClient.query(selectStr, onDealContributionSuccessOppty, onErrorSfdc);
                     } else if (navContext == "History") {
+                        $j('#radiodeal').hide();
                         showOpptyHistory();
                     }else {
                       forcetkClient.query("SELECT Id, Name FROM Opportunity LIMIT 10", onSuccessOppty, onErrorSfdc);
@@ -87,6 +92,17 @@ function regLinkClickHandlers() {
     $j(document).on("click",'#link_clearhistory',function(e) {
                     clearAllSearchTermHistory();
                     });
+
+    $j(document).on("change",'.deals',function(e) {
+                  //  alert("deals");
+                    if (navContext == "Deal Contribution") {
+                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
+                    forcetkClient.query(selectStr, onDealContributionSuccessOppty, onErrorSfdc);
+                    } else if (navContext == "Search"){
+                       $j('#searchbar').trigger('change');
+                    }
+                    });
+
     
     $j(document).on("click",'#link_logout',function(e) {
                     var sfOAuthPlugin = cordova.require("salesforce/plugin/oauth");
@@ -148,6 +164,7 @@ function onDealContributionSuccessOppty(response) {
     }
     $j.each(response.records, function(i, SearchResult) {
             if (SearchResult.Opportunity__r != null) {
+            if (!$j('#bigdeals').prop('checked') || ($j('#bigdeals').prop('checked') && SearchResult.Opportunity__r.Amount > 100000)) {
               var newLi = $j("<li class=oppty-details id=" + SearchResult.Opportunity__r.Id + ">" +
                            SearchResult.Opportunity__r.Name + "<br>" +
                              "<span class=chatter-li-timestamp-comment>Next Steps: " +
@@ -163,6 +180,7 @@ function onDealContributionSuccessOppty(response) {
                           //   "<input type=text name=name id=name />" +
                            "</li>");
               ul.append(newLi);
+            }
             }
             });
     
@@ -381,7 +399,7 @@ function performSearch(searchString) {
     if (searchString.length > 1) {
         $j.mobile.showPageLoadingMsg();
         
-            forcetkClient.search("FIND {" + searchString + "} IN ALL FIELDS Returning Opportunity(Name,Id,isClosed,Amount)  LIMIT 200", onSuccessSearch, onErrorSfdc);
+            forcetkClient.search("FIND {" + searchString + "} IN ALL FIELDS Returning Opportunity(Name,Id,isClosed,Amount,AccountId)  LIMIT 200", onSuccessSearch, onErrorSfdc);
         
         }
         //udpate text in searchbox
@@ -405,11 +423,14 @@ function onSuccessSearch (response) {
     }
     $j.each(response, function(i, SearchResult) {
             if (SearchResult.attributes.type == "Opportunity" && SearchResult.IsClosed == false) {
-            var newLi = $j("<li class=oppty-details id=" + SearchResult.Id + ">" +
+             if (!$j('#bigdeals').prop('checked') || ($j('#bigdeals').prop('checked') && SearchResult.Amount > 100000)) {
+
+                var newLi = $j("<li class=oppty-details id=" + SearchResult.Id + ">" +
                            SearchResult.Name +
                            "</li>");
-            ul.append(newLi);
-            }
+                  ul.append(newLi);
+              }
+             }
             });
     
     $j("#div_oppty_list").trigger( "create" );
