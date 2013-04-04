@@ -1,0 +1,245 @@
+.ui-li-desc {
+  text-overflow: none;
+}
+
+.next_page {
+  float:right;
+}
+  
+.content-options {
+  position: absolute;
+  right: 3px;
+  top: -1px;
+  font-size: 10px;
+}
+.content-options-text {
+  font-size: 10px;
+}
+
+.content-hl-span {
+  color: #000000;
+  text-overflow: none;  
+  font-size: 14px;
+  font-weight: normal;
+  display: block;
+  margin: 0px 0px 0px 0px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.content-hl-filetype {
+  font-size: 13px;
+   margin: 1px 5px 1px 0px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+
+.content-hl-age {
+  font-size: 13px;
+   margin: 1px 5px 1px 0px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+
+.chatter-photo {
+  float: left;
+   margin: 5px 5px 5px 5px;
+
+}
+
+.chatter {
+    background-color: #ffffff;
+}
+.chatter-li-comment {
+    background-color: #eff7fa;
+}
+
+.chatter-det-comment {
+    background-color: #eff7fa;
+}
+
+.chatter-li-thumb {
+  position: absolute;
+  left: 3px;
+  top: 10px;
+  px;
+  border: 1px solid #8F8F8F;
+  max-height: 80px;
+  max-width: 80px;
+}
+.chatter-li-timestamp {
+   font-size: 13px;
+   margin: 1px 5px 1px 0px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+
+.chatter-li-timestamp-comment {
+   font-size: 13px;
+   margin: 1px 5px 1px 20px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+.chatter-li-body {
+   word-wrap: break-word;
+   color: #000000;
+  font-size: 14px;
+  font-weight: normal;
+  display: block;
+  margin: 0px 0px 0px 0px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.chatter-li-commentbody {
+   word-wrap: break-word;
+  font-size: 14px;
+  font-weight: normal;
+  display: block;
+  margin: 0px 0px 0px 20px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.chatter-li-file {
+  margin: 0px 0px 0px 4px;
+}
+
+.renderImage {
+   position:relative;
+    right:80px;
+    margin: 45px 15px 0px 0px;
+
+}
+
+.detail-img { 
+    border: 5px solid #8F8F8F;
+}
+
+.title {
+   float: left;
+   color:#1679C9;
+   margin: 15px 15px 0px 0px;
+
+}
+
+.linkpost {
+   color:#1679C9;
+   margin: 15px 15px 0px 0px;
+
+}
+
+.bHeader {
+  width:100%;
+}
+
+.chatter-details {
+    width:100px;
+}
+
+.chatter-details-img {
+    float:left;
+    vertical-align: middle;
+    width: 100px;
+    margin: 3px 5px 3px 2px;
+    overflow: invisible;
+    border: 1px solid #8F8F8F;
+
+}
+.chatter-details-user {
+   clear:both;
+   white-space:nowrap;
+   margin: 0px 2px 0px 2px;
+   color:#000000;
+}
+
+.chatter-details-group {
+   float:left;
+   margin: 0px 2px 0px 6px;
+   white-space:nowrap;
+   color:#1679C9;
+}
+
+
+.chatter-details-text {
+     clear:both;
+     margin: 0px 2px 0px 2px;
+     font-weight: normal;
+
+}
+
+.history-li {
+    background-color: #ffffff;
+
+}
+
+.records {
+   word-wrap: break-word;
+   color: #000000;
+  font-size: 14px;
+  font-weight: normal;
+  display: block;
+  margin: 0px 0px 0px 0px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.details {
+   word-wrap: break-word;
+   color: #000000;
+  font-size: 14px;
+  font-weight: normal;
+  display: block;
+  margin: 0px 0px 0px 0px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.history-li a:link {
+  word-wrap: break-word;
+  color: #000000;
+  font-size: 14px;
+  font-weight: normal;
+  display: block;
+  margin: 3px 0px 3px 5px;
+  overflow: visible;
+  white-space: normal;
+}
+
+.timestamp {
+   float:right;
+   font-size: 13px;
+   margin: 0px 2px 0px 6px;
+   font-style: italic;
+   color: #8F8F8F;
+}
+
+.contact-div {
+  border: 1px solid #c3c3c3;
+  padding: 3px 3px 3px 3px;
+  //float:left;
+}
+
+.contact-title {
+   font-size: 13px;
+   margin: 1px 5px 1px 0px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+
+.contact-value {
+   font-size: 17px;
+   margin: 1px 5px 1px 0px;
+   overflow: visible;
+   white-space: normal;
+}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0; user-scalable=no" />
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+            
+            <!-- include jquery mobile -->
+            <link rel="stylesheet" href="jquery/jquery.mobile-1.2.0.min.css" />
+            <script src="jquery/jquery-1.8.3.min.js"></script>
+            <script src="jquery/jquery.mobile-1.2.0.min.js"></script>
+            
+            <!-- Include cordova. -->
+            <script src="cordova-2.3.0.js"></script>
+            <!-- include local utility functionality -->
+            <script src="SFHybridApp.js"></script>
+            <!-- required for oauth plugin support -->
+            <script src="SalesforceOAuthPlugin.js"></script>
+            
+            <!-- include forcetk for REST transaction support -->
+            <script src="forcetk.js"></script>
+            <link rel="stylesheet" href="app.css" />
+            
+            <!-- log window styling -->
+            <style>
+                .logWindow {display:none; width:700px;}
+                .logWindow > p {padding:0px; margin:0px; word-wrap:break-word;}
+                </style>
+            
+            <script>
+                
+                
+                // The version of the REST API you wish to use in your app.
+                var apiVersion = "v23.0";
+                
+                // If you want to prevent dragging, uncomment this section
+                /*
+                 function preventBehavior(e)
+                 {
+                 e.preventDefault();
+                 };
+                 document.addEventListener("touchmove", preventBehavior, false);
+                 */
+                
+                /* If you are supporting your own protocol, the var invokeString will contain any arguments to the app launch.
+                 see http://iphonedevelopertips.com/cocoa/launching-your-own-application-via-a-custom-url-scheme.html
+                 for more details -jm */
+                /*
+                 function handleOpenURL(url)
+                 {
+                 // do something with the url passed in.
+                 }
+                 */
+                
+                var forcetkClient;
+                var debugMode = true;
+                
+                jQuery(document).ready(function() {
+                                       //Add event listeners and so forth here
+                                       document.addEventListener("deviceready", onDeviceReady,false);
+                                       
+                                       });
+                
+                // When this function is called, Cordova has been initialized and is ready to roll
+                function onDeviceReady() {
+                    //Call getAuthCredentials to get the initial session credentials
+                    cordova.require("salesforce/plugin/oauth").getAuthCredentials(salesforceSessionRefreshed, getAuthCredentialsError);
+                    
+                    //register to receive notifications when autoRefreshOnForeground refreshes the sfdc session
+                    document.addEventListener("salesforceSessionRefresh",salesforceSessionRefreshed,false);
+                    
+                    //enable buttons
+                    regLinkClickHandlers();
+                }
+                
+                
+                function salesforceSessionRefreshed(creds) {
+                    
+                    // Depending on how we come into this method, `creds` may be callback data from the auth
+                    // plugin, or an event fired from the plugin.  The data is different between the two.
+                    var credsData = creds;
+                    if (creds.data)  // Event sets the `data` object with the auth data.
+                    credsData = creds.data;
+                    
+                    forcetkClient = new forcetk.Client(credsData.clientId, credsData.loginUrl);
+                    forcetkClient.setSessionToken(credsData.accessToken, apiVersion, credsData.instanceUrl);
+                    forcetkClient.setRefreshToken(credsData.refreshToken);
+                    forcetkClient.setUserAgentString(credsData.userAgent);
+                    forcetkClient.setUserId(credsData.userId);
+                }
+                
+                
+                function getAuthCredentialsError(error) {
+                }
+                
+                </script>
+            
+            <!-- load our app-specific code -->
+            <script src="inline.js"></script>
+            
+            </head>
+    <body>
+        <div data-role="page" data-theme="d" id="jqm-home">
+            <script>     $j(document).delegate('#jqm-home', 'pageinit', function() {
+                                               $j('#searchbox').hide();
+                                               showOpptyHistory();
+                                               });
+                </script>
+            <div  data-theme="d" data-role="header">
+                <a href="#options" data-icon="gear" class="ui-btn-right">Options</a>
+                
+                <h1>Salesforce SE Comments App</h1>
+                <a href="#options" data-icon="gear" class="ui-btn-right">Options</a>
+                <div id="searchbox">
+                  <input placeholder="Search" type="search" name="search" id="searchbar" value="" autocomplete="off" autocapitalize="off" autocorrect="off"  />
+                </div>
+                <div data-theme="d" data-role="navbar" id="navbar">
+                    <ul>
+                        <li><a id="chatter-nav" href="#" >Recent</a></li>
+                        <li><a id="chatter-nav" href="#" >Deal Contribution</a></li>
+                        <li><a id="chatter-nav" href="#" >Search</a></li>
+                        <li><a id="chatter-nav" href="#" class="ui-btn-active">History</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="#content" data-role="content">
+                <div id="div_oppty_list"></div>
+                
+                
+            </div>
+            
+        </div>
+        <div data-role="page" data-theme="d" data-add-back-btn="true" id="recorddetail">
+            <div  data-theme="d"  data-role="header">
+                <h1>Record Detail</h1>
+                <a href="#options" data-icon="gear" class="ui-btn-right">Options</a>
+                
+            </div>
+            
+            <div data-theme="d" id="#content" data-role="content">
+                <div id="record_details"> </div>
+            </div>
+            <div  data-theme="d"  data-role="footer" data-position="fixed" id="det-footer">
+            </div>
+        </div>
+        
+        <div data-role="page" data-theme="d" data-add-back-btn="true" id="options">
+            <div  data-theme="d" data-role="header">
+                <h1>Salesforce SE Comments App Options</h1>
+            </div>
+            
+            
+            <div data-theme="d" id="#content" data-role="content">
+                
+                <div>
+                    <p><a href="#" id="link_clearhistory" data-role="button" data-inline="true">Clear Search History</a></p>
+                </div>
+                <div  data-theme="d" data-role="footer" data-position="fixed">
+                    <div id="loggedInUsername"> </div>
+                    <p><a href="#" id="link_logout" data-role="button" data-inline="true">Logout</a></p>
+                </div>
+                
+            </div>
+        </div>
+        
+    </body>
+</html>
