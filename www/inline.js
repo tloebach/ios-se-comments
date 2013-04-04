@@ -236,7 +236,7 @@ function onOpptyItemTap() {
     
         forcetkClient.retrieve("Opportunity",id, null, onOpptyItem, onErrorSfdc);
     
-        $j.mobile.changePage('#recorddetail');
+        $j.mobile.changePage('#recorddetail', { transition: "slide"});
         lastTarget=target;
         lastId = id;
 
