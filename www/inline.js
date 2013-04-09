@@ -7,7 +7,24 @@ var seComentsStr = "";
 
 function regLinkClickHandlers() {
     var $j = jQuery.noConflict();
-     
+    
+    $j(document).on("input",'#senextsteps',function(e) {
+                    // alert("key Press");
+                    var seNextSteps = $j('#senextsteps').val();
+                    var remaining = 255 - seNextSteps.length;
+                    $j('.nextstepscountdown').text(remaining + ' characters remaining.');
+                    });
+    
+    
+    $j(document).on("input",'#secomments',function(e) {
+                    // alert("key Press");
+                    var seNextSteps = $j('#secomments').val();
+                    var remaining = 255 - seNextSteps.length;
+                    $j('.commentscountdown').text(remaining + ' characters remaining.');
+                    });
+    
+
+    
     $j(document).on("change",'#searchbar',function(e) {
                     //hide the keyboard
                     var int = 1;
@@ -66,11 +83,11 @@ function regLinkClickHandlers() {
                     var test = false;
                     
                    
-                    if (secomments.length > 0 && secomments != lisecomments) {
+                    if (secomments.length >= 0 && secomments.length <= 255 && secomments != lisecomments) {
                        myObj.SE_Comments__c = secomments;
                         test = true;    
                     }
-                    if (seNextSteps.length > 0 && linextsteps != seNextSteps) {
+                    if (seNextSteps.length >= 0 && seNextSteps.length <= 255 && linextsteps != seNextSteps) {
                         myObj.SE_Next_Steps__c = seNextSteps;
                         test = true;
                     }
@@ -79,7 +96,10 @@ function regLinkClickHandlers() {
                     // need to sleep for awhile to wait for call to finish.;
                     if (test == true) {
                        //alert(JSON.stringify(myObj));
+                       $j.mobile.showPageLoadingMsg();
                        forcetkClient.update("Opportunity", lastId, myObj, onOpptyUpdate, onErrorSfdc);
+                    } else {
+                        alert ('Cannot submit SE Comments or Next Step entries.')
                     }
                     });
     
@@ -231,17 +251,11 @@ function onOpptyItemTap() {
         target.addClass("ui-btn-active");
         var id = target.attr("id");    
     
-    
-    
-    
         forcetkClient.retrieve("Opportunity",id, null, onOpptyItem, onErrorSfdc);
     
         $j.mobile.changePage('#recorddetail', { transition: "slide"});
         lastTarget=target;
         lastId = id;
-
-    
-
 }
 
 function refreshOpptyItemTap() {    
@@ -282,9 +296,13 @@ function onOpptyItem(response) {
         "<div class=contact-div><div class=contact-title>SE Comments History</div>" + "<div class=contact-value>" + nullCheck(response.SE_Comments_History__c)	+ "</div></div>" +
         "<div data-role=fieldcontain> " +
         "<label for=senextsteps>SE Next Steps:</label>" +
-        "<textarea name=senextsteps id=senextsteps>" + nullCheck(response.SE_Next_Steps__c) + "</textarea>" +
-        "<label for=secomments>SE Comments:</label>" + 
-        "<textarea name=secomments id=secomments>" + nullCheck(response.SE_Comments__c) + "</textarea>" +
+        "<div><textarea name=senextsteps id=senextsteps>" + nullCheck(response.SE_Next_Steps__c) + "</textarea>" +
+        "<div><span class=nextstepscountdown>" + nullLength(response.SE_Next_Steps__c) +
+        " characters remaining</span></div></div>" +
+        "<br><label for=secomments>SE Comments:</label>" + 
+        "<div><textarea name=secomments id=secomments>" + nullCheck(response.SE_Comments__c) + "</textarea>" +
+        "<div><span class=commentscountdown>" + nullLength(response.SE_Comments__c) +
+        " characters remaining</span></div></div>" +
         "<a href=# id=Comments-submit data-role=button data-inline=true data-theme=b>Submit</a>" +
         "</div>" +
         "</div></a>";
@@ -301,6 +319,15 @@ function nullCheck(str) {
         return "";
     } else {
         return str;
+    }
+}
+
+function nullLength(str) {
+    if (str == null || str == "255") {
+        return "255";
+    } else {
+        var x = str.length;
+        return 255 - x;
     }
 }
 
