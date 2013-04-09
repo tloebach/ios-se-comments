@@ -12,7 +12,7 @@ function regLinkClickHandlers() {
                     // alert("key Press");
                     var seNextSteps = $j('#senextsteps').val();
                     var remaining = 255 - seNextSteps.length;
-                    $j('.nextstepscountdown').text(remaining + ' characters remaining.');
+                    $j('.nextstepscountdown').text(remaining + ' characters remaining');
                     });
     
     
@@ -20,7 +20,7 @@ function regLinkClickHandlers() {
                     // alert("key Press");
                     var seNextSteps = $j('#secomments').val();
                     var remaining = 255 - seNextSteps.length;
-                    $j('.commentscountdown').text(remaining + ' characters remaining.');
+                    $j('.commentscountdown').text(remaining + ' characters remaining');
                     });
     
 

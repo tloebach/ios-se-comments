@@ -237,6 +237,24 @@
    white-space: normal;
 }
 
+.commentscountdown {
+   font-size: 13px;
+   margin: 1px 5px 1px 0px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+
+.nextstepscountdown {
+   font-size: 13px;
+   margin: 1px 5px 1px 0px;
+   font-style: italic;
+   color: #8F8F8F;
+   overflow: visible;
+   white-space: normal;
+}
+
 .contact-value {
    font-size: 17px;
    margin: 1px 5px 1px 0px;
