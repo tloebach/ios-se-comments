@@ -71,11 +71,12 @@ function regLinkClickHandlers() {
 
     // Fires when the NavBar is clicked
     $j(document).on("click",'#navbar',function(e) {
-                     $j('#searchbox').hide();
-                    navContext = $j('a.ui-btn-active').text();
+                    $j('#searchbox').hide();
+                    navContext = $j('#navbar a.ui-btn-active').text();
                     if (debug) {
                         alert (navContext);
                     }
+                    // using indexOf in case we select multiple <a> elements, we only want the NavBar element. The "back" hyperlink can show up here unexpectedly.
                     if (navContext.indexOf("Recent") >= 0) {
                        $j('#radiodeal').hide();
                        forcetkClient.recent(onSuccessRecentOppty, onErrorSfdc);
