@@ -1,17 +1,14 @@
-//Sample code for Hybrid REST Explorer
-
-var lastTarget;
-var lastId;
-var nextStepStr = "";
-var seComentsStr = "";
-var navContext;
-var lastSearchTerm="";
-var debug = false;
+var lastTarget;         //Used to turn on and off highlighting on list items
+var lastId;             //Stores the Opportunity ID for the selected List Items
+var navContext;         //Stores the current navBar selection
+var lastSearchTerm="";  //Stores the last Search Term
+var debug = false;      //Turn on to get lots of debugging messages
 
 function regLinkClickHandlers() {
     var $j = jQuery.noConflict();
 
-    // Need the pagehide event to fire when the back button is clicked. 
+    // Need the pagehide event to fire when the back button is clicked. We need this event to refresh the Opportunity List when the "back" button is clicked.
+    
     $j(document).on("pagehide", '#recorddetail', function() {
                     if (debug) {
                        alert("in pagehide");
@@ -30,6 +27,7 @@ function regLinkClickHandlers() {
                     }
                    });
     
+    // This event is used to count the characters for the SE Next Steps field. We cannot allow more than 255 characters.
     $j(document).on("input",'#senextsteps',function(e) {
                     // alert("key Press");
                     var seNextSteps = $j('#senextsteps').val();
@@ -46,7 +44,7 @@ function regLinkClickHandlers() {
                     });
     
 
-    
+    // Fires when a term is entered in the Search text input.
     $j(document).on("change",'#searchbar',function(e) {
                     //hide the keyboard
                     var int = 1;
@@ -71,7 +69,7 @@ function regLinkClickHandlers() {
                     }
                     });
 
-    
+    // Fires when the NavBar is clicked
     $j(document).on("click",'#navbar',function(e) {
                      $j('#searchbox').hide();
                     navContext = $j('a.ui-btn-active').text();
@@ -111,7 +109,7 @@ function regLinkClickHandlers() {
                     }
                     });
 
-    
+    // Fires when the Submit button is clicked
     $j(document).on("click",'#Comments-submit',function(e) {
                     var myObj = new Object;
                     var secomments = $j('#secomments').val();
@@ -143,6 +141,7 @@ function regLinkClickHandlers() {
                     }
                     });
     
+    // Fires when a list item is tapped
     $j(document).on("tap",'.oppty-details',function(e) {
                     // dont let the click propagate
                     if (debug) {
@@ -152,13 +151,16 @@ function regLinkClickHandlers() {
                     onOpptyItemTap();
                     });
     
+    // Fires when the clear history button is tapped fromthe Options page
     $j(document).on("click",'#link_clearhistory',function(e) {
                     clearAllSearchTermHistory();
                     });
 
+    // Fires when the "All Deals/100k filter is tapped
     $j(document).on("change",'.deals',function(e) {
                   //  alert("deals");
                     if (navContext == "Deal Contribution") {
+                    $j.mobile.showPageLoadingMsg();
                     var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount,Opportunity__r.CloseDate,Opportunity__r.StageName from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
                     forcetkClient.query(selectStr, onDealContributionSuccessOppty, onErrorSfdc);
                     } else if (navContext == "Search"){
@@ -166,7 +168,7 @@ function regLinkClickHandlers() {
                     }
                     });
 
-    
+    // Fires when the logout button is clicked
     $j(document).on("click",'#link_logout',function(e) {
                     var sfOAuthPlugin = cordova.require("salesforce/plugin/oauth");
                     sfOAuthPlugin.logout();
@@ -174,47 +176,15 @@ function regLinkClickHandlers() {
     
 }
 
+// This callback is used to update the Record Details after the SE Comments and Next Steps are submitted. We want to wait 5 seconds before submitting this request. 
 function onOpptyUpdate () {
     //alert("op");
     setTimeout(forcetkClient.retrieve("Opportunity",lastId, null, onOpptyItem, onErrorSfdc),5000);
 }
 
-// The Deal Support List View
-// 
-function onSuccessOppty(response) {
-    var $j = jQuery.noConflict();
-
-    $j("#div_oppty_list").html("");
-    var ul = $j('<ul data-role="listview" data-filter="true" data-inset="true" data-theme="d" data-dividertheme="a"></ul>');
-    
-    $j("#div_oppty_list").append(ul);
-    
-    if (response.length == 0) {
-        ul.append($j('<li data-role="list-divider">No Results Found</li>'));
-    } else {
-        ul.append($j('<li data-role="list-divider">My Salesforce Opportunities</li>'));
-    }
-    $j.each(response.records, function(i, SearchResult) {
-            var newLi = $j("<li class=oppty-details id=" + SearchResult.Id + ">" +
-                           SearchResult.Name + "<br>" +
-                           "<span class=chatter-li-timestamp>Next Steps: " +
-                           nullCheck(SearchResult.SE_Next_Steps__c) +
-                           "</span><br>" +
-                           "<span class=chatter-li-timestamp>Comments: " +
-                           nullCheck(SearchResult.SE_Comments__c) +
-                           "</span><br>" +
-                          "</li>");
-            ul.append(newLi);
-            
-            });
-    
-    $j("#div_oppty_list").trigger( "create" );
-    $j.mobile.hidePageLoadingMsg();
-}
-
+// Deal Contribution callback used to build DC opportunity list
 function onDealContributionSuccessOppty(response) {
     var $j = jQuery.noConflict();
-   // alert("onDealContributionSuccessOppty");
     
     $j("#div_oppty_list").html("");
     var ul = $j('<ul data-role="listview" data-filter="true" data-inset="true" data-theme="d" data-dividertheme="a"></ul>');
@@ -231,13 +201,13 @@ function onDealContributionSuccessOppty(response) {
             if (!$j('#bigdeals').prop('checked') || ($j('#bigdeals').prop('checked') && SearchResult.Opportunity__r.Amount > 100000)) {
               var newLi = $j("<li class=oppty-details id=" + SearchResult.Opportunity__r.Id + ">" +
                            SearchResult.Opportunity__r.Name + "<br>" +
-                             "<span class=chatter-li-timestamp-comment>Next Steps: " +
+                             "<span class=oppty-list-details>Next Steps: " +
                              nullCheck(SearchResult.Opportunity__r.SE_Next_Steps__c) +
                              "</span><br>" +
-                        "<span class=chatter-li-timestamp-comment>Comments: " +
+                        "<span class=oppty-list-details>Comments: " +
                     nullCheck(SearchResult.Opportunity__r.SE_Comments__c) +
                              "</span><br>" +
-                             "<span class=chatter-li-timestamp-comment>" +
+                             "<span class=oppty-list-details>" +
                              "Amount: " + nullCheck(SearchResult.Opportunity__r.Amount) +
                              " " + "  Close Date: " + SearchResult.Opportunity__r.CloseDate + " " +
                              "  Stage Name: " + SearchResult.Opportunity__r.StageName + "<span>" +
@@ -252,6 +222,7 @@ function onDealContributionSuccessOppty(response) {
     $j.mobile.hidePageLoadingMsg();
 }
 
+// Recent opportunities callback used to build recent opportunity list
 function onSuccessRecentOppty(response) {
     var $j = jQuery.noConflict();
     
@@ -278,10 +249,8 @@ function onSuccessRecentOppty(response) {
     $j.mobile.hidePageLoadingMsg();
 }
 
-function onErrorSfdc() {
-    alert("error");
-}
 
+// This fires when opporunity is tapped. It builds the record detail page for the oppty
 function onOpptyItemTap() {
     var target = $j( event.target );
     
@@ -302,10 +271,8 @@ function onOpptyItemTap() {
         lastId = id;
 }
 
-function refreshOpptyItemTap() {    
-    forcetkClient.retrieve("Opportunity",lastId, null, onOpptyItem, onErrorSfdc);
-}
 
+// Builds the Record Details page when the oppty item is tapped. 
 function onOpptyItem(response) {
     var $j = jQuery.noConflict();
     
@@ -313,24 +280,7 @@ function onOpptyItem(response) {
     
     var htmlStr = "";
     
-    
-    
     if (response.attributes.type == "Opportunity") {
-        
-        
-
-//        if (response.SE_Next_Steps__c == null) {
-//            nextStepStr = "";
-//        } else {
-//            nextStepStr = response.SE_Next_Steps__c;
-//        }
-//        
-//        if (response.response.SE_Comments__c  == null) {
-//            seComentsStr = ""
-//        } else {
-//            seComentsStr = response.response.SE_Comments__c;
-//        }
-        
         htmlStr = "<div class=contact-div>" + "<div class=contact-title>Name</div>" + "<div class=contact-value>" + response.Name + "</div></div>" +
         "<div class=contact-div><div class=contact-title>Amount</div>" + "<div class=contact-value>" + nullCheck(response.Amount)	+ "</div></div>" +
         "<div class=contact-div><div class=contact-title>Close Date</div>" + "<div class=contact-value>" + nullCheck(response.CloseDate)	+ "</div></div>" +
@@ -358,6 +308,8 @@ function onOpptyItem(response) {
     lastTarget.removeClass("ui-btn-active");
 
 }
+
+// replaces null strings with blank strings
 function nullCheck(str) {
     if (str == null) {
         return "";
@@ -366,6 +318,7 @@ function nullCheck(str) {
     }
 }
 
+// returns the length of a string for the string countdown display
 function nullLength(str) {
     if (str == null || str == "255") {
         return "255";
@@ -375,18 +328,13 @@ function nullLength(str) {
     }
 }
 
-function onErrorDevice(error) {
-    cordova.require("salesforce/util/logger").logToConsole("onErrorDevice: " + JSON.stringify(error) );
-    alert('Error getting device contacts!');
-}
-
-
-
+// Error reporting call back
 function onErrorSfdc(error) {
     alert(JSON.stringify(error));
+    $j.mobile.hidePageLoadingMsg();
 }
 
-
+// Builds the content for the "History" tab. We store in the History in persistent HTML5 storage.
 function addToHistory (searchTerm, searchId) {
     
     if (searchTerm != null) {
@@ -404,6 +352,7 @@ function addToHistory (searchTerm, searchId) {
     }
 }
 
+// Clears all Search History
 function clearAllSearchTermHistory () {
     
     window.localStorage.removeItem("searchHistory");
@@ -412,6 +361,7 @@ function clearAllSearchTermHistory () {
     
 }
 
+// Is the item already in the History
 function isInHistory (searchTerm, searchId) {
     
     if (searchTerm != null) {
@@ -428,6 +378,7 @@ function isInHistory (searchTerm, searchId) {
     }
 }
 
+// Callback to build History Opportunity List
 function showOpptyHistory() {
     var $j = jQuery.noConflict();
     
@@ -462,6 +413,8 @@ function showOpptyHistory() {
     $j.mobile.hidePageLoadingMsg();
     
 }
+
+// This function perform the SOSL search for opportunities from the Search Term entered in the search text input
 function performSearch(searchString) {
     if (searchString == null) return false;
     var $j = jQuery.noConflict();
@@ -479,6 +432,7 @@ function performSearch(searchString) {
 
 }
 
+// The callback that builds the Search Opportunity List. The SOSL response object has a different structure so we need a separate function to handle the results.
 function onSuccessSearch (response) {
     var $j = jQuery.noConflict();
     
@@ -502,13 +456,13 @@ function onSuccessSearch (response) {
 //                  ul.append(newLi);
                 var newLi = $j("<li class=oppty-details id=" + SearchResult.Id + ">" +
                            SearchResult.Name + "<br>" +
-                           "<span class=chatter-li-timestamp-comment>Next Steps: " +
+                           "<span class=oppty-list-details>Next Steps: " +
                            nullCheck(SearchResult.SE_Next_Steps__c) +
                            "</span><br>" +
-                           "<span class=chatter-li-timestamp-comment>Comments: " +
+                           "<span class=oppty-list-details>Comments: " +
                            nullCheck(SearchResult.SE_Comments__c) +
                            "</span><br>" +
-                           "<span class=chatter-li-timestamp-comment>" +
+                           "<span class=oppty-list-details>" +
                            "Amount: " + nullCheck(SearchResult.Amount) +
                            " " + "  Close Date: " + SearchResult.CloseDate + " " +
                            "  Stage Name: " + SearchResult.StageName + "<span>" +
