@@ -4,9 +4,31 @@ var lastTarget;
 var lastId;
 var nextStepStr = "";
 var seComentsStr = "";
+var navContext;
+var lastSearchTerm="";
+var debug = false;
 
 function regLinkClickHandlers() {
     var $j = jQuery.noConflict();
+
+    // Need the pagehide event to fire when the back button is clicked. 
+    $j(document).on("pagehide", '#recorddetail', function() {
+                    if (debug) {
+                       alert("in pagehide");
+                    alert(navContext);
+                    }
+                    if(navContext.indexOf("Search") >= 0) {
+                       if (debug) {
+                        alert(lastSearchTerm);
+                       }
+                        performSearch(lastSearchTerm);
+                    } else if (navContext.indexOf("Deal Contribution") >= 0){
+                    if (debug) {
+                        alert(navContext);
+                    }
+                        $j('#navbar').trigger('click');
+                    }
+                   });
     
     $j(document).on("input",'#senextsteps',function(e) {
                     // alert("key Press");
@@ -43,34 +65,51 @@ function regLinkClickHandlers() {
                     
                     var searchTerm = this.value;
                     if (this.value != "") {
-                    performSearch(this.value);
+                       performSearch(this.value);
+                      lastSearchTerm = this.value;
+                    
                     }
                     });
 
     
     $j(document).on("click",'#navbar',function(e) {
                      $j('#searchbox').hide();
-                    navContext = e.target.innerText;
-                    if (navContext == "Recent") {
+                    navContext = $j('a.ui-btn-active').text();
+                    if (debug) {
+                        alert (navContext);
+                    }
+                    if (navContext.indexOf("Recent") >= 0) {
                        $j('#radiodeal').hide();
                        forcetkClient.recent(onSuccessRecentOppty, onErrorSfdc);
-                    } else if (navContext == "Search") {
-                       // $j.mobile.changePage('#searchpage');
+                    } else if (navContext.indexOf("Search") >= 0 ) {
+                    // $j.mobile.changePage('#searchpage');
+                    if (debug) {
+                       alert("in navbar Search");
+                    }
                        $j('#searchbox').show();
                        $j('#radiodeal').show();
+                    
+                    if (lastSearchTerm == "") {
+                        $j("#div_oppty_list").html("");
 
-                    } else if (navContext == "Deal Contribution") {
+                    } else {
+                        performSearch(lastSearchTerm);
+                    }
+
+                    } else if (navContext.indexOf("Deal Contribution") >= 0 ) {
+                    if (debug) {
+                      alert("in navbar DC");
+                    }
                     $j('#radiodeal').show();
-                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
+                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount,Opportunity__r.CloseDate,Opportunity__r.StageName from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
                       forcetkClient.query(selectStr, onDealContributionSuccessOppty, onErrorSfdc);
-                    } else if (navContext == "History") {
+                    } else if (navContext.indexOf("History") >= 0 ) {
                         $j('#radiodeal').hide();
                         showOpptyHistory();
                     }else {
-                      forcetkClient.query("SELECT Id, Name FROM Opportunity LIMIT 10", onSuccessOppty, onErrorSfdc);
+                       alert("failed navbar");
                     }
                     });
-    
 
     
     $j(document).on("click",'#Comments-submit',function(e) {
@@ -98,6 +137,7 @@ function regLinkClickHandlers() {
                        //alert(JSON.stringify(myObj));
                        $j.mobile.showPageLoadingMsg();
                        forcetkClient.update("Opportunity", lastId, myObj, onOpptyUpdate, onErrorSfdc);
+
                     } else {
                         alert ('Cannot submit SE Comments or Next Step entries.')
                     }
@@ -105,6 +145,9 @@ function regLinkClickHandlers() {
     
     $j(document).on("tap",'.oppty-details',function(e) {
                     // dont let the click propagate
+                    if (debug) {
+                    alert(" in oppty details tap");
+                    }
                     e.preventDefault();
                     onOpptyItemTap();
                     });
@@ -116,7 +159,7 @@ function regLinkClickHandlers() {
     $j(document).on("change",'.deals',function(e) {
                   //  alert("deals");
                     if (navContext == "Deal Contribution") {
-                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
+                    var selectStr = "SELECT SE_Full_name__c,Name, Opportunity__r.Name,Opportunity__r.Id,Opportunity__r.SE_Comments__c,Opportunity__r.SE_Next_Steps__c,Opportunity__r.Amount,Opportunity__r.CloseDate,Opportunity__r.StageName from Deal_Contribution__c where Opportunity__r.isClosed = false AND SE_User_ID__c = '" + forcetkClient.userId + "'";
                     forcetkClient.query(selectStr, onDealContributionSuccessOppty, onErrorSfdc);
                     } else if (navContext == "Search"){
                        $j('#searchbar').trigger('change');
@@ -136,7 +179,8 @@ function onOpptyUpdate () {
     setTimeout(forcetkClient.retrieve("Opportunity",lastId, null, onOpptyItem, onErrorSfdc),5000);
 }
 
-
+// The Deal Support List View
+// 
 function onSuccessOppty(response) {
     var $j = jQuery.noConflict();
 
@@ -159,7 +203,6 @@ function onSuccessOppty(response) {
                            "<span class=chatter-li-timestamp>Comments: " +
                            nullCheck(SearchResult.SE_Comments__c) +
                            "</span><br>" +
-
                           "</li>");
             ul.append(newLi);
             
@@ -171,6 +214,7 @@ function onSuccessOppty(response) {
 
 function onDealContributionSuccessOppty(response) {
     var $j = jQuery.noConflict();
+   // alert("onDealContributionSuccessOppty");
     
     $j("#div_oppty_list").html("");
     var ul = $j('<ul data-role="listview" data-filter="true" data-inset="true" data-theme="d" data-dividertheme="a"></ul>');
@@ -193,13 +237,13 @@ function onDealContributionSuccessOppty(response) {
                         "<span class=chatter-li-timestamp-comment>Comments: " +
                     nullCheck(SearchResult.Opportunity__r.SE_Comments__c) +
                              "</span><br>" +
-                             
-                          // "<label for=name>SE Next Steps:</label>" +
-                          //  "<input type=text name=name id=name />" +
-                          //   "<label for=name>SE Comments:</label>" +
-                          //   "<input type=text name=name id=name />" +
+                             "<span class=chatter-li-timestamp-comment>" +
+                             "Amount: " + nullCheck(SearchResult.Opportunity__r.Amount) +
+                             " " + "  Close Date: " + SearchResult.Opportunity__r.CloseDate + " " +
+                             "  Stage Name: " + SearchResult.Opportunity__r.StageName + "<span>" +
                            "</li>");
               ul.append(newLi);
+            
             }
             }
             });
@@ -303,7 +347,7 @@ function onOpptyItem(response) {
         "<div><textarea name=secomments id=secomments>" + nullCheck(response.SE_Comments__c) + "</textarea>" +
         "<div><span class=commentscountdown>" + nullLength(response.SE_Comments__c) +
         " characters remaining</span></div></div>" +
-        "<a href=# id=Comments-submit data-role=button data-inline=true data-theme=b>Submit</a>" +
+        "<a href=# id=Comments-submit data-role=button  data-inline=true data-theme=b>Submit</a>" +
         "</div>" +
         "</div></a>";
     }
@@ -426,7 +470,7 @@ function performSearch(searchString) {
     if (searchString.length > 1) {
         $j.mobile.showPageLoadingMsg();
         
-            forcetkClient.search("FIND {" + searchString + "} IN ALL FIELDS Returning Opportunity(Name,Id,isClosed,Amount,AccountId)  LIMIT 200", onSuccessSearch, onErrorSfdc);
+            forcetkClient.search("FIND {" + searchString + "} IN ALL FIELDS Returning Opportunity(Name,Id,isClosed,Amount,AccountId,StageName,CloseDate,SE_Next_Steps__c, SE_Comments__c)  LIMIT 200", onSuccessSearch, onErrorSfdc);
         
         }
         //udpate text in searchbox
@@ -452,10 +496,26 @@ function onSuccessSearch (response) {
             if (SearchResult.attributes.type == "Opportunity" && SearchResult.IsClosed == false) {
              if (!$j('#bigdeals').prop('checked') || ($j('#bigdeals').prop('checked') && SearchResult.Amount > 100000)) {
 
+//                var newLi = $j("<li class=oppty-details id=" + SearchResult.Id + ">" +
+//                           SearchResult.Name +
+//                           "</li>");
+//                  ul.append(newLi);
                 var newLi = $j("<li class=oppty-details id=" + SearchResult.Id + ">" +
-                           SearchResult.Name +
-                           "</li>");
-                  ul.append(newLi);
+                           SearchResult.Name + "<br>" +
+                           "<span class=chatter-li-timestamp-comment>Next Steps: " +
+                           nullCheck(SearchResult.SE_Next_Steps__c) +
+                           "</span><br>" +
+                           "<span class=chatter-li-timestamp-comment>Comments: " +
+                           nullCheck(SearchResult.SE_Comments__c) +
+                           "</span><br>" +
+                           "<span class=chatter-li-timestamp-comment>" +
+                           "Amount: " + nullCheck(SearchResult.Amount) +
+                           " " + "  Close Date: " + SearchResult.CloseDate + " " +
+                           "  Stage Name: " + SearchResult.StageName + "<span>" +
+                               "</li>");
+                ul.append(newLi);
+
+
               }
              }
             });
